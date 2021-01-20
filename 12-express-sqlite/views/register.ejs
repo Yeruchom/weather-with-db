@@ -1,0 +1,36 @@
+<%- include('includes/head.ejs') %>
+</head>
+
+
+<body>
+<div class="container">
+    <div class="col-12 col-md-5">
+    <%if(wrongEmail){%>
+        <h3>Hi, the email <%=wrongEmail%> is already in use</h3>
+        <p>please correct the email you have entered or try to log into your account.</p>
+    <%} else if(timeExpired){%>
+        <h3>Hi, it took to long to register, please start from the beginning</h3>
+    <%}%>
+    <h2>fill up this form to register</h2>
+
+<form method="POST">
+    <div class="form-group">
+      <label for="email">Email address:</label>
+      <input type="email" class="form-control" name="email" required>
+    </div>
+    <div class="form-group">
+        <label for="first">First name:</label>
+        <input type="text" class="form-control" name="first" required pattern="[a-zA-Z]*" title="should not contain any digits">
+      </div>
+    <div class="form-group">
+        <label for="last">Last name:</label>
+        <input type="text" class="form-control" name="last" required pattern="[a-zA-Z]*" title="should not contain any digits">
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Submit</button>
+
+  </form>
+  </div>
+</div>
+</body>
+</html>
