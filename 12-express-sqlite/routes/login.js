@@ -19,11 +19,12 @@ router.get('/',function (req, res, next) {
 router.post('/',function (req, res, next) {
     console.log("post login route");
 
-    db.Emails.findOne({where:{email:req.body.email, password:req.body.password}, attributes:['firstName', 'lastName'], raw : true})
+    db.Emails.findOne({where:{email:req.body.email, password:req.body.password}, attributes:['id','firstName', 'lastName'], raw : true})
         .then((user)=>{
             console.log("user: ", user, );
             if(user){
                 req.session.name = user.firstName +' '+ user.lastName;
+                req.session.userId = user.id;
                 res.redirect('/login/locations');
             }
             else{

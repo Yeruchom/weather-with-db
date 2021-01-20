@@ -4,45 +4,87 @@
     //============================================================================
     //a function that adds to the table the new data the user had submitted
     //============================================================================
+    function fetch_locations_list(){
+        console.log('in fetch_locations_list');
 
-    function add2list(event){
 
-        event.preventDefault() //this will prevent the submitting of the form to the browser
+        let url = new URL('/api/locations_list');
+        url.search = new URLSearchParams({'userId': 2});
+        fetch(url)
+            .then((response) => {
+                if (response.error){
+                   document.querySelector("#data").innerHTML = "Some error occured when getting the list ";
+                return;
+                // handle the error
+                // if (response.status !== 200) {
+                //     document.getElementById("weather").innerHTML =
+                //         'Looks like there was a problem fetching the list. Status Code: ' + response.status;
+                //     return;
+                // }
+                }
+                response.json().then((d)=> {
+                    // if (data.error)
+                    //     document.querySelector("#data").innerHTML = "Some error occured, is the database initialized?";
+                    listProcessor(d);
+                })
+                    .catch((err)=>{ console.log('there was an error getting the list ', err);});
 
+            }).catch(function (err) {
+                console.log('Fetch Error :', err);
+            });
+    };
+
+
+
+
+    function listProcessor(list){
+        console.log("list: ", list);
+
+        // event.preventDefault() //this will prevent the submitting of the form to the browser
         let table = document.getElementById("table");
-        let row = document.createElement("tr");
-        table.appendChild(row);
 
-        //create a radio button for each item in the table
-        let radio = document.createElement("input")
-        radio.type = "radio"
-        radio.name = "radio"
-        row.appendChild(document.createElement("td"))
-        row.lastChild.appendChild(radio)
+        for(item in list){
+            let row = document.createElement("tr");
+            table.appendChild(row);
+            //create a radio button for each item in the table
+            let radio = document.createElement("input")
+            radio.type = "radio"
+            radio.name = "radio"
+            row.appendChild(document.createElement("td"))
+            row.lastChild.appendChild(radio)
 
-        row.appendChild(document.createElement("td"));
-        row.lastChild.innerText = document.getElementById("address").value;
+            row.appendChild(document.createElement("td"));
+            row.lastChild.innerText = item.address;
+            // row.lastChild.innerText = document.getElementById("address").value;
 
-        row.appendChild(document.createElement("td"));
-        row.lastChild.innerText = document.getElementById("longitude").value;
+            row.appendChild(document.createElement("td"));
+            row.lastChild.innerText = item.lon;
+            // row.lastChild.innerText = document.getElementById("longitude").value;
 
-        row.appendChild(document.createElement("td"));
-        row.lastChild.innerText = document.getElementById("latitude").value;
+            row.appendChild(document.createElement("td"));
+            row.lastChild.innerText = item.lat;
+            // row.lastChild.innerText = document.getElementById("latitude").value;
 
-        //create a 'remove' button for each item in the table
-        let remove = document.createElement("button");
-        remove.type = "button";
-        remove.className = "form-control btn btn-light";
-        remove.innerText = "remove";
-        row.appendChild(document.createElement("td"))
-        row.lastChild.appendChild(remove);
+            //create a 'remove' button for each item in the table
+            let remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "form-control btn btn-light";
+            remove.innerText = "remove";
+            row.appendChild(document.createElement("td"))
+            row.lastChild.appendChild(remove);
 
-        //display the table if it is not empty
-        if(document.getElementById("list").style.display === "none"){
+        }
+
+        if(list.length > 0){
             document.getElementById("list").style.display = "block";
         }
-        //reset the form, so the user will be able to add new data
-        document.getElementById("form").reset();
+
+        // //display the table if it is not empty
+        // if(document.getElementById("list").style.display === "none"){
+        //     document.getElementById("list").style.display = "block";
+        // }
+        // //reset the form, so the user will be able to add new data
+        // document.getElementById("form").reset();
 
     }
 
@@ -144,9 +186,10 @@
         }
     }
 
-
     document.addEventListener('DOMContentLoaded', function () {
-        document.getElementById("form").addEventListener("submit", add2list);
+        console.log("before executing foo");
+        fetch_locations_list();
+        // document.getElementById("form").addEventListener("submit", add2list);
         document.getElementById("list").addEventListener("click", buttonHandler);
     }, false);
 
