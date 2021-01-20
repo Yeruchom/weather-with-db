@@ -29,9 +29,10 @@ router.post('/add',function (req, res, next) {
 
 
 
-router.get('/locations_list', (req, res, next)=>{
+router.post('/locations_list', (req, res, next)=>{
+    console.log("in get locations_list, req.body:", req.body);
 
-    db.Locations.findAll({where:{userId:req.body.userId}, attributes:['address', 'lon', 'lat'], raw:true})
+    db.Locations.findAll({where:{user:req.body.userId}, attributes:['address', 'lon', 'lat'], raw:true})
     // db.Locations.findAll({where:{userId:req.session.userId}, attributes:['address', 'lon', 'lat'], raw:true})
         .then((list)=>{
             console.log('list: ', list);

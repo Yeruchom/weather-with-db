@@ -47,6 +47,7 @@ router.get('/locations',function (req, res, next) {
     res.render('locations', {
             pageTitle: 'Locations',
             userName: req.session.name,
+            userId: req.session.userId,
             path: '/login/locations',
             });
         }

@@ -9,46 +9,43 @@
         //a function that adds to the table the new data the user had submitted
         //============================================================================
         function fetch_locations_list(){
-            console.log('in fetch_locations_list');
+            console.log('in fetch_locations_list, userId:', "<%= userId%>");
 
-
-            let url = new URL('./api/locations_list', document.URL.toString());
-            console.log("ure is: ", url);
-            url.search = new URLSearchParams({'userId': 2});
-            fetch(url)
+            fetch('../api/locations_list', {
+                method:'POST',
+                body:new URLSearchParams({'userId': "<%= userId%>"})
+            })
                 .then((response) => {
-                    if (response.error){
-                        document.querySelector("#data").innerHTML = "Some error occured when getting the list ";
-                        return;
                         // handle the error
                         // if (response.status !== 200) {
                         //     document.getElementById("weather").innerHTML =
                         //         'Looks like there was a problem fetching the list. Status Code: ' + response.status;
                         //     return;
                         // }
-                    }
-                    response.json().then((d)=> {
-                        // if (data.error)
-                        //     document.querySelector("#data").innerHTML = "Some error occured, is the database initialized?";
-                        listProcessor(d);
-                    })
-                        .catch((err)=>{ console.log('there was an error getting the list ', err);});
-
+                    // console.log("response: ", response);
+                    response.json().then(listProcessor)
+                        .catch((err)=>{
+                            console.log('there was an error getting the list ', err);
+                            return;
+                        });
                 }).catch(function (err) {
                 console.log('Fetch Error :', err);
+                return;
             });
         };
 
-
-
-
+        //============================================================================
+        //a function that displays the list of addresses that received from api
+        //============================================================================
         function listProcessor(list){
             console.log("list: ", list);
 
             // event.preventDefault() //this will prevent the submitting of the form to the browser
             let table = document.getElementById("table");
 
-            for(item in list){
+            for(item of list){
+                console.log("item: ", item);
+
                 let row = document.createElement("tr");
                 table.appendChild(row);
                 //create a radio button for each item in the table
@@ -59,7 +56,7 @@
                 row.lastChild.appendChild(radio)
 
                 row.appendChild(document.createElement("td"));
-                row.lastChild.innerText = item.address;
+                row.lastChild.innerText = item.address.toString();
                 // row.lastChild.innerText = document.getElementById("address").value;
 
                 row.appendChild(document.createElement("td"));
@@ -84,13 +81,6 @@
                 document.getElementById("list").style.display = "block";
             }
 
-            // //display the table if it is not empty
-            // if(document.getElementById("list").style.display === "none"){
-            //     document.getElementById("list").style.display = "block";
-            // }
-            // //reset the form, so the user will be able to add new data
-            // document.getElementById("form").reset();
-
         }
 
         //============================================================================
@@ -99,26 +89,30 @@
 
         function buttonHandler(event){
 
-            if(event.target.innerText === "remove") {
+            if(event.target.innerText === "show"){
+                let radioBottuns = document.getElementsByName("radio");
+                for(r of radioBottuns){
+                    if(r.checked){
+                        document.getElementById("spinner").style.display = "block";
+                        let lon =  r.parentElement.parentElement.childNodes[2].innerText;
+                        let lat =  r.parentElement.parentElement.childNodes[3].innerText;
+                        fetchWeather(lon, lat);
+                        return;
+                    }
+                }
+
+            }
+            else if(event.target.innerText === "remove") {
                 event.target.parentElement.parentElement.remove() //remove that row from the table
+                    let arr =event.target.parentElement.parentElement.childNodes.slice(1, 4);
+                for(i in arr)
+                console.log("details: ", arr[i]);
+
             }
 
             //the table is empty (has just the thead row) -> display = "none"
             if(document.getElementById("table").childElementCount <= 1){
                 document.getElementById("list").style.display = "none";
-            }
-
-            else if(event.target.innerText === "show"){
-                let radioBottuns = document.getElementsByName("radio");
-                for(r of radioBottuns){
-                    if(r.checked){
-                        let lon =  r.parentElement.parentElement.childNodes[2].innerText;
-                        let lat =  r.parentElement.parentElement.childNodes[3].innerText;
-                        myFetch(lon, lat);
-                        return;
-                    }
-                }
-
             }
         }
 
@@ -126,7 +120,7 @@
         //a function that gets (lon, lat) and gets the weather from 7timer site
         //============================================================================
 
-        function myFetch(lon, lat) {
+        function fetchWeather(lon, lat) {
 
             let url = new URL('http://www.7timer.info/bin/api.pl');
             url.search = new URLSearchParams({'lon': lon, 'lat':lat, 'product':'civillight', 'output':'json'});
@@ -143,8 +137,10 @@
                     response.json().then(weatherProcessor);}
             )
                 .catch(function (err) {
-                    console.log('Fetch Error :', err);
-                });
+                    console.log('There was an error getting the required weather :', err);
+                }).catch((err)=>{
+                console.log('Fetch Error :', err);
+            })
 
             //get the picture
             url = new URL('http://www.7timer.info/bin/astro.php');
@@ -166,6 +162,7 @@
 
         function weatherProcessor(json){
             document.getElementById("weather").style.display = "block";
+            document.getElementById("spinner").style.display = "none";
 
             //clear the weather of last time
             let result = document.getElementById("result");
@@ -192,9 +189,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', function () {
-            console.log("before executing foo");
+            // console.log("before executing foo");
             fetch_locations_list();
-            // document.getElementById("form").addEventListener("submit", add2list);
             document.getElementById("list").addEventListener("click", buttonHandler);
         }, false);
 
@@ -253,8 +249,13 @@
                 </tr>
                 </thead>
             </table>
+
             <label for="show">Show weather results</label>
             <button type="button" class="btn btn-light" id="show">show</button>
+
+            <div class="spinner-border m-5" role="status" id="spinner" style="display: none">
+                <span class="sr-only">Loading...</span>
+            </div>
         </div>
     </div>
 </div>
